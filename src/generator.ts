@@ -54,6 +54,22 @@ async function resolveTemplatePath(templateName: string, opt: GenerateOptions) {
 async function renderTemplateToFile(tpl: TemplateSpec, spec: Spec, opt: GenerateOptions, specDir: string) {
   const context = { spec, ...spec, ...(tpl.context || {}) };
 
+  // Process context values that have curly braces
+  const processedContext = { ...context };
+  if (tpl.context) {
+    for (const [key, value] of Object.entries(tpl.context)) {
+      if (typeof value === 'string' && hasCurlyVars(value)) {
+        processedContext[key] = substituteCurlyVars(value, context);
+      }
+    }
+  }
+
+  // Make the template context available both as individual properties and as 'context' object
+  const finalContext = {
+    ...processedContext,
+    context: processedContext
+  };
+
   const templatePath = await resolveTemplatePath(tpl.template, opt);
   if (!templatePath) {
     logger.warn(`Template not found: ${tpl.template}`);
@@ -62,9 +78,9 @@ async function renderTemplateToFile(tpl: TemplateSpec, spec: Spec, opt: Generate
 
   let targetRel = tpl.target;
   if (hasCurlyVars(targetRel)) {
-    targetRel = substituteCurlyVars(targetRel, context);
+    targetRel = substituteCurlyVars(targetRel, processedContext);
   } else {
-    targetRel = ejs.render(targetRel, context, { async: false });
+    targetRel = ejs.render(targetRel, processedContext, { async: false });
   }
 
   const baseOut = spec.outputDir ? path.resolve(specDir, spec.outputDir) : opt.outputDir;
@@ -79,7 +95,7 @@ async function renderTemplateToFile(tpl: TemplateSpec, spec: Spec, opt: Generate
   }
 
   const templateStr = await fs.readFile(templatePath, 'utf8');
-  const output = await ejs.render(templateStr, context, { async: true });
+  const output = await ejs.render(templateStr, finalContext, { async: true });
   await fs.writeFile(targetAbs, output, 'utf8');
   logger.info(`Generated: ${slash(path.relative(vscode.workspace.workspaceFolders?.[0].uri.fsPath || '', targetAbs))}`);
 }

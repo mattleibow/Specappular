@@ -1,6 +1,11 @@
 .vscode/**
 .git/**
+.github/**
 **/*.map
 **/*.ts
 node_modules/@types/**
 src/**
+test-functionality.js
+*.vsix
+tools/**
+docs/**
