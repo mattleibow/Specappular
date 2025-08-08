@@ -1,0 +1,96 @@
+{
+  "name": "specappular",
+  "displayName": "Specappular",
+  "description": "Work with specs and generate code in the same VS Code window.",
+  "version": "0.0.1",
+  "publisher": "mattleibow",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.88.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onCommand:specappular.generateCode",
+    "onCommand:specappular.validateSpec",
+    "onCommand:specappular.createSpec",
+    "onCommand:specappular.cleanGenerated",
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "specappular.generateCode",
+        "title": "Specappular: Generate Code from Spec",
+        "category": "Specappular"
+      },
+      {
+        "command": "specappular.validateSpec",
+        "title": "Specappular: Validate Spec",
+        "category": "Specappular"
+      },
+      {
+        "command": "specappular.createSpec",
+        "title": "Specappular: Create New Spec",
+        "category": "Specappular"
+      },
+      {
+        "command": "specappular.cleanGenerated",
+        "title": "Specappular: Clean Generated Code",
+        "category": "Specappular"
+      }
+    ],
+    "configuration": {
+      "title": "Specappular",
+      "properties": {
+        "specappular.specGlob": {
+          "type": "string",
+          "default": "spec/**/*.y?(a)ml",
+          "description": "Glob pattern to find spec files (YAML/JSON)."
+        },
+        "specappular.templatesDir": {
+          "type": "string",
+          "default": "templates",
+          "description": "Directory containing EJS templates. Workspace-relative."
+        },
+        "specappular.outputDir": {
+          "type": "string",
+          "default": "generated",
+          "description": "Default output directory for generated code. Workspace-relative."
+        },
+        "specappular.overwrite": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to overwrite existing generated files."
+        },
+        "specappular.autoGenerateOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically generate code when a spec file is saved."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p .",
+    "watch": "tsc -watch -p ."
+  },
+  "devDependencies": {
+    "@types/ejs": "^3.1.5",
+    "@types/fs-extra": "^11.0.4",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.12.7",
+    "@types/vscode": "^1.88.0",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "fast-glob": "^3.3.2",
+    "fs-extra": "^11.2.0",
+    "js-yaml": "^4.1.0",
+    "slash": "^5.1.0"
+  }
+}

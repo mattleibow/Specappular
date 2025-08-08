@@ -1,47 +1,65 @@
-# Specappular
+# Specappular (VS Code Extension)
 
-Spec-driven AI development: edit Markdown specs under `spec/`, and the orchestrator generates or updates code and tests. Specs are both the source of truth and the human-friendly docs.
+Generate code from simple specs, right inside VS Code.
 
-This repo contains:
-- A spec structure that scales to complex, multi-component apps.
-- A .NET-first orchestrator design (CLI named `specapp`) that can target any language over time.
-- An example multi-file spec for a Todo app with:
-  - Console frontend (C#)
-  - ASP.NET Core Web API backend (C#)
-  - Shared domain and data definitions
-  - Test definitions (model, API, DB, UI/console, E2E)
+## Features
 
-MVP limits
-- Focus on .NET targets (ASP.NET Core, Console, xUnit, EF Core).
-- Generated code lives in `codegen/` and is safe to regenerate.
-- CI opens PRs for any change under `spec/`.
+- Define specs in YAML/JSON under `spec/`
+- Generate code using EJS templates
+- Validate specs
+- Create new spec scaffold
+- Optional auto-generate on save
 
-Workflow
-1. Author or edit specs in `spec/` (see `spec/index.md`).
-2. Run `specapp plan` to see the generation plan.
-3. Run `specapp generate` to create/update code in `codegen/`.
-4. Run `specapp testgen` to generate tests from spec cases into `codegen/tests`.
-5. Build and test locally, or push and let CI open a PR with generated changes.
+## Commands
 
-Directories
-- `spec/` — Multi-file, componentized Markdown specs (source + docs).
-- `codegen/` — Generated code (do not edit).
-- `src/` — Hand-authored code (optional).
-- `.specapp/` — Plan, lockfile, cache, traces.
-- `.github/workflows/` — CI for spec-to-code PRs.
+- Specappular: Generate Code from Spec
+- Specappular: Validate Spec
+- Specappular: Create New Spec
+- Specappular: Clean Generated Code
 
-Safety
-- `.specapp/SpecLock.json` tracks generated files and content hashes.
-- Only files marked owned by Specapp are overwritten.
-- Human code lives outside `codegen/`.
+## Configuration
 
-Roadmap (high level)
-- v0: .NET-only target adapters (Console, Web API, xUnit, EF Core).
-- v1: Plug-in adapters for more targets (.NET MAUI, Next.js, Python FastAPI, etc.).
-- v1: Incremental refactoring support via syntax-aware patching (Roslyn/tree-sitter).
-- v1: Rich acceptance test DSL and test data factories.
+- `specappular.specGlob` — default `spec/**/*.y?(a)ml`
+- `specappular.templatesDir` — default `templates`
+- `specappular.outputDir` — default `generated`
+- `specappular.overwrite` — default `false`
+- `specappular.autoGenerateOnSave` — default `false`
 
-Getting started
-- Install .NET 9 SDK (or latest LTS).
-- Add API keys as repo secrets if using cloud LLMs (e.g., `OPENAI_API_KEY`).
-- Explore `spec/index.md`, then run the CLI once wired up.
+## Getting Started
+
+1. Open this repo in VS Code.
+2. Run `npm install`.
+3. Press F5 to launch the Extension Development Host.
+4. Create a spec via "Specappular: Create New Spec" or open `spec/examples/todo.yaml`.
+5. Run "Specappular: Generate Code from Spec".
+
+Templates are searched in your workspace `templates/` folder. If a template is not found, bundled templates are used as fallback.
+
+## Spec Format
+
+```yaml
+version: 1
+name: MyType
+outputDir: generated
+templates:
+  - template: class.ejs
+    target: "src/models/{{name}}.ts"
+    context:
+      className: "{{name}}"
+      fields:
+        - { name: "id", type: "number" }
+```
+
+- `name`: required
+- `templates[]`: required
+  - `template`: EJS template file name
+  - `target`: relative or absolute path; supports `{{var}}` and EJS `<% %>` substitutions
+  - `context`: additional data provided to the template
+
+In templates, you can access `spec` and `context`.
+
+## Notes
+
+- Overwrite behavior is controlled by `specappular.overwrite`.
+- `outputDir` can be set globally in settings or per-spec.
+- This is a minimal baseline. We can add: preview, diagnostics, schema validation, watches, and multi-language template packs.
