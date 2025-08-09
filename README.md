@@ -1,65 +1,54 @@
 # Specappular (VS Code Extension)
 
-Generate code from simple specs, right inside VS Code.
+AI will read plain-English Markdown specs and create full applications.
 
-## Features
+Current extension behavior (minimal MVP):
+- Specappular: Initialize App Spec — prompts for an app name and scaffolds a basic spec workspace (spec/, codegen/, src/, .specapp/ + placeholder Markdown files).
+- Specappular: Generate — writes a small artifact to `codegen/hello.txt` and attempts to open Copilot Chat if available (so you can say "hello" to test connectivity).
+- Setting: `specappular.autoGenerateOnSave` — when enabled, saving any Markdown file under `spec/` triggers "Generate".
 
-- Define specs in YAML/JSON under `spec/`
-- Generate code using EJS templates
-- Validate specs
-- Create new spec scaffold
-- Optional auto-generate on save
+This repository also includes a sample app under `samples/todo-app/`, intended to be opened as a separate VS Code workspace (open that folder directly). In that workspace, your specs live at `spec/`.
 
-## Commands
+Planned functionality (to be implemented):
 
-- Specappular: Generate Code from Spec
-- Specappular: Validate Spec
-- Specappular: Create New Spec
-- Specappular: Clean Generated Code
+This repo contains:
+- A VSCode extension that watches and builds an app based on the specs
+- An example multi-file spec for a Todo app with:
+  - Console frontend (C#)
+  - ASP.NET Core Web API backend (C#)
+  - Shared domain and data definitions
+  - Test definitions (model, API, DB, UI/console, E2E)
 
-## Configuration
+MVP limits
+- Focus on .NET targets (ASP.NET Core, Console, xUnit, EF Core).
+- Generated code lives in `codegen/` and is safe to regenerate.
+- CI opens PRs for any change under `spec/`.
 
-- `specappular.specGlob` — default `spec/**/*.y?(a)ml`
-- `specappular.templatesDir` — default `templates`
-- `specappular.outputDir` — default `generated`
-- `specappular.overwrite` — default `false`
-- `specappular.autoGenerateOnSave` — default `false`
+Workflow
+1. Author or edit specs in `spec/` (see `spec/index.md`).
+2. Run `specapp plan` to see the generation plan.
+3. Run `specapp generate` to create/update code in `codegen/`.
+4. Run `specapp testgen` to generate tests from spec cases into `codegen/tests`.
+5. Build and test locally, or push and let CI open a PR with generated changes.
 
-## Getting Started
+Directories 
+- `spec/` — Multi-file, componentized Markdown specs (source + docs).
+- `codegen/` — Generated code (do not edit).
+- `src/` — Hand-authored code (optional).
+- `.specapp/` — Plan, lockfile, cache, traces.
 
-1. Open this repo in VS Code.
-2. Run `npm install`.
+Safety
+- `.specapp/SpecLock.json` tracks generated files and content hashes.
+- Only files marked owned by Specapp are overwritten.
+- Human code lives outside `codegen/`.
+
+Roadmap (high level)
+- v0: .NET-only target adapters (Console, Web API, xUnit, EF Core).
+- v1: Plug-in adapters for more targets (.NET MAUI, Next.js, Python FastAPI, etc.).
+- v1: Incremental refactoring support via syntax-aware patching (Roslyn/tree-sitter).
+- v1: Rich acceptance test DSL and test data factories.
+
+Development
+1. `npm install`
+2. `npm run compile`
 3. Press F5 to launch the Extension Development Host.
-4. Create a spec via “Specappular: Create New Spec” or open `spec/examples/todo.yaml`.
-5. Run “Specappular: Generate Code from Spec”.
-
-Templates are searched in your workspace `templates/` folder. If a template is not found, bundled templates are used as fallback.
-
-## Spec Format
-
-```yaml
-version: 1
-name: MyType
-outputDir: generated
-templates:
-  - template: class.ejs
-    target: "src/models/{{name}}.ts"
-    context:
-      className: "{{name}}"
-      fields:
-        - { name: "id", type: "number" }
-```
-
-- `name`: required
-- `templates[]`: required
-  - `template`: EJS template file name
-  - `target`: relative or absolute path; supports `{{var}}` and EJS `<% %>` substitutions
-  - `context`: additional data provided to the template
-
-In templates, you can access `spec` and `context`.
-
-## Notes
-
-- Overwrite behavior is controlled by `specappular.overwrite`.
-- `outputDir` can be set globally in settings or per-spec.
-- This is a minimal baseline. We can add: preview, diagnostics, schema validation, watches, and multi-language template packs.
